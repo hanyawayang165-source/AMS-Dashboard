@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta charset="utf-8">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <link rel="stylesheet" href="style.css">
+  <style>
+  .nav-group-toggle{display:flex;align-items:center;gap:10px;width:100%;padding:10px 16px;
+    background:none;border:none;color:inherit;font:inherit;cursor:pointer;text-align:left;}
+  .nav-group-toggle .chevron{margin-left:auto;transition:transform .15s ease;font-size:11px;opacity:.7;}
+  .nav-group.open .nav-group-toggle .chevron{transform:rotate(180deg);}
+  .nav-submenu{display:none;flex-direction:column;}
+  .nav-group.open .nav-submenu{display:flex;}
+  .tab-btn.sub{padding-left:38px;font-size:13px;opacity:.92;}
+</style>
+</head>
+<body>
+
+  <div id="loginGate" class="login-gate">
+    <div class="login-card">
+      <img class="login-logo" src="logo.png" alt="Logo Wisma 46">
+      <h1 class="login-title">Attendance Monitoring System</h1>
+      <p class="login-subtitle">Departemen Housekeeping<br>PT Swadharma Primautama</p>
+      <div class="login-form-gate">
+        <label for="gateUsername">Username</label>
+        <input type="text" id="gateUsername" autocomplete="username" placeholder="Masukkan username">
+        <label for="gatePassword">Password</label>
+        <input type="password" id="gatePassword" autocomplete="current-password" placeholder="Masukkan password">
+      </div>
+      <div id="gateLoginError" class="login-error"></div>
+      <button class="btn btn-primary login-btn" id="gateLoginSubmit">Masuk</button>
+      <p class="login-footnote">Hubungi admin apabila lupa username/password.</p>
+    </div>
+  </div>
+
+  <div id="appShell" class="app-shell hidden">
+  <div class="layout">
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-brand">
+        <img class="brand-logo" src="logo.png" alt="Logo Wisma 46">
+      <div class="sidebar-brand-text">
+        <strong>AMS</strong>
+        <span>Housekeeping</span>
+      </div>
+      <button class="sidebar-close-btn" id="sidebarCloseBtn" aria-label="Tutup menu">✕</button>
+    </div>
+
+    <nav class="sidebar-nav">
+  <button class="tab-btn active" data-tab="dashboard"><span class="tab-icon">📊</span><span>Dashboard</span></button>
+
+  <div class="nav-group">
+    <button class="nav-group-toggle" type="button">
+      <span class="tab-icon">🗂️</span><span>Absensi</span><span class="chevron">▾</span>
+    </button>
+    <div class="nav-submenu">
+      <button class="tab-btn sub" data-tab="jadwal"><span class="tab-icon">🗓️</span><span>Jadwal Kerja</span></button>
+      <button class="tab-btn sub" data-tab="input"><span class="tab-icon">✅</span><span>Input Realisasi</span></button>
+      <button class="tab-btn sub" data-tab="rekap"><span class="tab-icon">📋</span><span>Rekap Karyawan</span></button>
+      <button class="tab-btn sub" data-tab="logabsensi"><span class="tab-icon">🧾</span><span>Log Absensi</span></button>
+      <button class="tab-btn sub" data-tab="pengajuanizin"><span class="tab-icon">📝</span><span>Pengajuan Izin</span><span class="nav-badge hidden" id="pengajuanBadge">0</span></button>
+    </div>
+  </div>
+
+  <div class="nav-group">
+    <button class="nav-group-toggle" type="button">
+      <span class="tab-icon">🧑‍💼</span><span>Kepegawaian</span><span class="chevron">▾</span>
+    </button>
+    <div class="nav-submenu">
+      <button class="tab-btn sub" data-tab="daftarkaryawan"><span class="tab-icon">🪪</span><span>Daftar Karyawan</span></button>
+    </div>
+  </div>
+  <div class="nav-group">
+  <button class="nav-group-toggle" type="button">
+    <span class="tab-icon">📈</span><span>Report</span><span class="chevron">▾</span>
+  </button>
+  <div class="nav-submenu">
+    <button class="tab-btn sub" data-tab="reportsummary"><span class="tab-icon">📄</span><span>Summary Report</span></button>
+    <button class="tab-btn sub" data-tab="reportdetail"><span class="tab-icon">🧍</span><span>Detail Report</span></button>
+    <button class="tab-btn sub" data-tab="reportdept"><span class="tab-icon">🏢</span><span>Department Report</span></button>
+    <button class="tab-btn sub" data-tab="reportexception"><span class="tab-icon">⚠️</span><span>Exception Report</span></button>
+  </div>
+</div>
+<div class="nav-group">
+    <button class="nav-group-toggle" type="button">
+      <span class="tab-icon">⚙️</span><span>Setting</span><span class="chevron">▾</span>
+    </button>
+    <div class="nav-submenu">
+      <button class="tab-btn sub" data-tab="settingaccount"><span class="tab-icon">👤</span><span>Account</span></button>
+      <button class="tab-btn sub" data-tab="settinghakakses"><span class="tab-icon">🔐</span><span>Hak Akses</span></button>
+      <button class="tab-btn sub" data-tab="settingjamkerja"><span class="tab-icon">⏰</span><span>Setting Jam Kerja</span></button>
+      <button class="tab-btn sub" data-tab="settingjadwalkerja"><span class="tab-icon">🗓️</span><span>Setting Jadwal Kerja</span></button>
+      <button class="tab-btn sub" data-tab="settingassignjadwal"><span class="tab-icon">🧩</span><span>Assign Karyawan ke Jadwal</span><span class="nav-badge hidden" id="assignJadwalBadge">0</span></button>
+      <button class="tab-btn sub" data-tab="settinglibur"><span class="tab-icon">📅</span><span>Hari Libur</span></button>
+      <button class="tab-btn sub" data-tab="settingfingerprint"><span class="tab-icon">🖐️</span><span>Integrasi Fingerprint</span></button>
+      <button class="tab-btn sub" data-tab="settingauditlog"><span class="tab-icon">📜</span><span>Audit Log</span></button>
+    </div>
+  </div>
+</nav>
+</nav>
+
+    <div class="sidebar-footer" id="authArea"></div>
+    </aside>
+
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <div class="main-area">
+      <header class="topbar">
+        <div class="topbar-left">
+          <button class="hamburger-btn" id="hamburgerBtn" aria-label="Buka menu">☰</button>
+          <div class="topbar-title">
+            <h1 id="topbarTabTitle">Dashboard</h1>
+            <p id="periodText">Departemen Housekeeping - PT Swadharma Primautama</p>
+          </div>
+        </div>
+        <div class="topbar-right">
+          <div class="topbar-row topbar-row-controls">
+  <select id="periodSelector" onchange="onPeriodSelectorChange()">
+    <option value="active">Periode Aktif</option>
+  </select>
+  <select id="departmentFilterSelector" onchange="onDepartmentFilterChange()">
+    <option value="ALL">Semua Department</option>
+  </select>
+            <button id="archiveBtn" class="btn btn-archive hidden" onclick="triggerArchivePeriod()">🗄 Arsipkan Periode Ini</button><button id="mulaiPeriodeBaruBtn" class="btn btn-archive hidden" onclick="triggerMulaiPeriodeBaru()">🔄 Mulai Periode Baru</button>
+            <span id="lastUpdate" class="muted"></span>
+            <button id="refreshBtn" class="btn btn-ghost">⟳ Refresh</button>
+          </div>
+        </div>
+      </header>
+
+  <div id="archiveBanner" class="archive-banner hidden">
+    <span>📁 Anda sedang melihat data ARSIP (read-only) — untuk kembali ke data aktif, pilih "Periode Aktif" di dropdown atas.</span>
+    <button id="deleteArchiveBtn" class="btn btn-danger hidden" onclick="triggerDeleteArchive()">🗑 Hapus Arsip Ini</button>
+  </div>
+  <div id="alignmentWarningBanner" class="hidden" style="background:#fef2f2;border:1px solid #fecaca;color:#991b1b;padding:10px 16px;margin:10px 20px 0;border-radius:8px;font-size:13px;line-height:1.6;"></div>
+ 
+
+  <main>
+
+    <!-- ============ TAB: DASHBOARD ============ -->
+    <section id="tab-dashboard" class="tab-content active">
+      <div id="cards" class="cards"></div>
+
+      <div class="panel" id="absenPiePanel">
+        <div class="panel-header">
+          <h3>Rincian Absen (Alfa/Izin/Sakit)</h3>
+        </div>
+        <div class="chart-wrap" style="max-width:360px;margin:0 auto;">
+          <canvas id="chartAbsenPie"></canvas>
+        </div>
+      </div>
+
+      <div class="chart-toolbar">
+        <div class="filter-group">
+          <label for="periodFilter">Periode:</label>
+          <select id="periodFilter" onchange="onPeriodFilterChange()"></select>
+        </div>
+        <div class="filter-group">
+          <label for="trenChartType">Jenis Grafik Tren:</label>
+          <select id="trenChartType" onchange="onChartTypeChange()">
+            <option value="line">Garis</option>
+            <option value="bar">Batang</option>
+          </select>
+        </div>
+        <div class="filter-group">
+  <button class="btn btn-primary" id="downloadDashboardPdfBtn" onclick="downloadDashboardPdf()">⬇ Download PDF Dashboard</button>
+</div>
+      </div>
+
+      <div class="chart-grid">
+        <div class="panel">
+          <div class="panel-header">
+            <h3>Tren Jumlah Hadir Harian</h3>
+          </div>
+          <div class="chart-wrap"><canvas id="chartTrenHarian"></canvas></div>
+        </div>
+        <div class="panel">
+          <div class="panel-header">
+            <h3>Plan vs Actual (Jumlah Karyawan per Tanggal)</h3>
+          </div>
+          <div class="chart-wrap"><canvas id="chartPlanActual"></canvas></div>
+        </div>
+      </div>
+
+      <div class="rank-grid">
+        <div class="panel">
+          <div class="panel-header">
+            <h3>🔻 5 Absen Terendah</h3>
+          </div>
+          <div id="rankWorst" class="rank-list"></div>
+        </div>
+        <div class="panel">
+          <div class="panel-header">
+            <h3>🏆 5 Absen Terbaik</h3>
+          </div>
+          <div id="rankBest" class="rank-list"></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header">
+          <h3>Rekap Kehadiran per Karyawan (ringkas)</h3>
+          </div>
+        <div id="dashRekapWrap" class="table-wrap" style="max-height:480px; overflow-y:auto;"></div>
+      </div>
+    </section>
+
+    <!-- ============ TAB: JADWAL ============ -->
+    <section id="tab-jadwal" class="tab-content">
+      <div class="panel">
+        <div class="panel-header">
+          <h3 id="jadwalTitle">Jadwal Kerja</h3>
+          <div class="legend" id="legendJadwal"></div>
+          <div class="header-actions">
+            <input type="text" id="searchJadwal" class="search-input" placeholder="🔍 Cari nama karyawan..." oninput="filterJadwalTable()">
+            <input type="file" id="jadwalFileInput" accept=".xlsx" style="display:none" onchange="handleJadwalFileSelected(event)">
+            <button class="btn btn-template" id="downloadTemplateBtn" onclick="downloadJadwalTemplate()">⬇ Template Excel</button>
+            <button class="btn btn-upload" id="uploadJadwalBtn" onclick="triggerJadwalUpload()">⬆ Upload Jadwal (Excel)</button>
+            <button class="btn btn-pdf" onclick="downloadPdf('Jadwal')">⬇ Download PDF</button>
+          </div>
+        </div>
+        <p class="muted" id="uploadHint">Klik sel untuk ubah shift (khusus admin). Atau download template Excel kosong, isi manual, lalu upload lagi. Karyawan dicocokkan berdasarkan nama.</p>
+        <div id="jadwalWrap" class="table-wrap grid-wrap"></div>
+      </div>
+    </section>
+
+    <!-- ============ TAB: INPUT REALISASI ============ -->
+    <section id="tab-input" class="tab-content">
+      <div class="panel">
+        <div class="panel-header">
+          <h3>Input / Update Realisasi Kehadiran</h3>
+          <div class="legend" id="legendRealisasi"></div>
+          <div class="header-actions">
+            <input type="text" id="searchRealisasi" class="search-input" placeholder="🔍 Cari nama karyawan..." oninput="filterRealisasiTable()">
+            <input type="file" id="realisasiFileInput" accept=".xlsx" style="display:none" onchange="handleRealisasiFileSelected(event)">
+            <button class="btn btn-upload" id="uploadRealisasiBtn" onclick="triggerRealisasiUpload()">⬆ Upload Realisasi (Excel)</button>
+            <input type="file" id="fingerFileInput" accept=".xls,.xlsx" style="display:none" onchange="handleFingerFileSelected(event)">
+   <button class="btn btn-upload" id="uploadFingerBtn" onclick="triggerFingerUpload()">📇 Upload Absen Finger</button>
+            <button class="btn btn-pdf" onclick="downloadPdf('Realisasi')">⬇ Download PDF</button>
+          </div>
+        </div>
+        <p class="muted" id="inputHint">Klik sel pada tabel untuk mengubah status kehadiran karyawan di tanggal tersebut. Atau upload file Excel dengan struktur sama seperti Realisasi (kolom No/Nama/Jabatan lalu tanggal berisi kode 1/A/M/S/C/OFF); karyawan dicocokkan berdasarkan nama.</p>
+        <div id="realisasiWrap" class="table-wrap grid-wrap"></div>
+      </div>
+    </section>
+
+    <!-- ============ TAB: REKAP ============ -->
+    <section id="tab-rekap" class="tab-content">
+      <div class="panel">
+        <div class="panel-header">
+          <h3>Rekapitulasi Absensi Karyawan (Lengkap)</h3>
+          <div class="header-actions">
+            <input type="text" id="searchRekap" class="search-input" placeholder="🔍 Cari nama karyawan..." oninput="filterRekapTable()">
+          </div>
+        </div>
+        <div id="rekapWrap" class="table-wrap"></div>
+      </div>
+    </section>
+
+    <!-- ============ TAB: LOG ABSENSI (EXCEL) ============ -->
+    <section id="tab-logabsensi" class="tab-content">
+      <div class="panel">
+        <div class="panel-header">
+          <h3>Laporan Log Absensi per Karyawan</h3>
+        </div>
+        <p class="muted">Pilih periode, karyawan, dan rentang tanggal (dalam periode itu), lalu unduh sebagai file Excel.</p>
+        <div class="log-filter-row">
+          <div class="filter-group">
+            <label for="logPeriodSelect">Periode:</label>
+            <select id="logPeriodSelect" onchange="onLogPeriodChange()">
+              <option value="active">Periode Aktif</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label for="logEmployeeSelect">Karyawan:</label>
+            <select id="logEmployeeSelect">
+              <option value="ALL">Semua Karyawan</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label for="logDayStart">Dari Tanggal:</label>
+            <select id="logDayStart"></select>
+          </div>
+          <div class="filter-group">
+            <label for="logDayEnd">Sampai Tanggal:</label>
+            <select id="logDayEnd"></select>
+          </div>
+          <button class="btn btn-excel" id="downloadLogBtn" onclick="downloadAttendanceLog()">⬇ Download Excel</button>
+        </div>
+      </div>
+    </section>
+
+<!-- ============ TAB: PENGAJUAN IZIN ============ -->
+<section id="tab-pengajuanizin" class="tab-content">
+  <div class="panel">
+    <div class="panel-header">
+      <h3>Pengajuan Izin / Sakit / Cuti</h3>
+      <div class="header-actions">
+        <div class="filter-group">
+          <label for="pengajuanStatusFilter">Status:</label>
+          <select id="pengajuanStatusFilter" onchange="loadPengajuanList_()">
+            <option value="Pending" selected>Pending</option>
+            <option value="Approved">Approved</option>
+            <option value="Rejected">Rejected</option>
+            <option value="ALL">Semua</option>
+          </select>
+        </div>
+        <button class="btn btn-ghost" id="refreshPengajuanBtn" onclick="loadPengajuanList_()">⟳ Refresh</button>
+      </div>
+    </div>
+    <p class="muted">Approve akan otomatis menandai Realisasi karyawan sesuai jenis pengajuan pada rentang tanggalnya. Reject membutuhkan catatan alasan (opsional).</p>
+    <div id="pengajuanWrap" class="table-wrap"></div>
+  </div>
+</section>
+
+<!-- Popup Reject Pengajuan Izin -->
+<div id="rejectPengajuanPicker" class="picker hidden">
+  <div class="picker-box">
+    <div class="picker-title" id="rejectPengajuanTitle">✘ Tolak Pengajuan</div>
+    <div class="login-form">
+      <label for="rejectPengajuanCatatan">Alasan penolakan (opsional)</label>
+      <textarea id="rejectPengajuanCatatan" rows="3" placeholder="Contoh: dokumen pendukung tidak jelas / rentang tanggal bentrok jadwal lain" style="width:100%;padding:10px 12px;border:1px solid #cbd5e1;border-radius:8px;font:inherit;resize:vertical;"></textarea>
+      <div id="rejectPengajuanError" class="login-error"></div>
+    </div>
+    <div class="picker-actions">
+      <button class="btn btn-danger" id="rejectPengajuanSubmit">Tolak Pengajuan</button>
+      <button class="btn btn-ghost" id="rejectPengajuanCancel">Batal</button>
+    </div>
+  </div>
+</div>
+<!-- ============ TAB: KEPEGAWAIAN - DAFTAR KARYAWAN ============ -->
+    <section id="tab-daftarkaryawan" class="tab-content">
+      <div class="panel">
+        <div class="panel-header">
+          <h3>Daftar Karyawan</h3>
+          <div class="header-actions">
+            <button class="btn btn-add" id="addEmployeeBtn" onclick="openAddEmployeePicker()">➕ Tambah Karyawan</button>
+            <button class="btn btn-danger" id="deleteEmployeeBtn" onclick="openDeleteEmployeePicker()">🗑 Hapus Karyawan</button>
+            <input type="text" id="searchDaftarKaryawan" class="search-input" placeholder="🔍 Cari nama karyawan..." oninput="filterDaftarKaryawanTable()">
+          </div>
+        </div>
+        <p class="muted">Nama &amp; Jabatan mengikuti data Jadwal periode aktif. NIK, Department, Shift, Status Karyawan, dan Tanggal Registrasi dikelola admin lewat tombol "✏ Edit".</p>
+        <div id="daftarKaryawanWrap" class="table-wrap"></div>
+      </div>
+    </section>
+    <!-- ============ TAB: REPORT - SUMMARY ============ -->
+<section id="tab-reportsummary" class="tab-content">
+  <div class="panel">
+    <div class="panel-header">
+      <h3>Summary Report</h3>
+      <div class="header-actions">
+        <button class="btn btn-ghost" onclick="previewReport_('summary')">👁 Preview</button>
+        <button class="btn btn-ghost" onclick="printReport_('summary')">🖨 Print</button>
+        <button class="btn btn-excel" id="reportBtn_summary_excel" onclick="exportReport_('summary','excel')">⬇ Export Excel</button>
+        <button class="btn btn-pdf" id="reportBtn_summary_pdf" onclick="exportReport_('summary','pdf')">⬇ Export PDF</button>
+      </div>
+    </div>
+    <p class="muted">Ringkasan seluruh data kehadiran untuk periode yang sedang dipilih di dropdown atas. Filter jabatan opsional.</p>
+    <div class="filter-group" style="align-items:flex-start;">
+      <label>Jabatan:</label>
+      <div id="reportSummaryJabatanFilter" class="chk-group"></div>
+    </div>
+    <div id="reportSummaryExtra"></div>
+    <div id="reportSummaryWrap" class="table-wrap"></div>
+  </div>
+</section>
+
+<!-- ============ TAB: REPORT - DETAIL ============ -->
+<section id="tab-reportdetail" class="tab-content">
+  <div class="panel">
+    <div class="panel-header">
+      <h3>Detail Report (Per Karyawan)</h3>
+      <div class="header-actions">
+        <button class="btn btn-ghost" onclick="previewReport_('detail')">👁 Preview</button>
+        <button class="btn btn-ghost" onclick="printReport_('detail')">🖨 Print</button>
+        <button class="btn btn-excel" id="reportBtn_detail_excel" onclick="exportReport_('detail','excel')">⬇ Export Excel</button>
+        <button class="btn btn-pdf" id="reportBtn_detail_pdf" onclick="exportReport_('detail','pdf')">⬇ Export PDF</button>
+      </div>
+    </div>
+    <div class="log-filter-row">
+      <div class="filter-group">
+        <label for="reportDetailEmployee">Karyawan:</label>
+        <select id="reportDetailEmployee"></select>
+      </div>
+      <div class="filter-group">
+        <label for="reportDetailDayStart">Dari Tanggal:</label>
+        <select id="reportDetailDayStart"></select>
+      </div>
+      <div class="filter-group">
+        <label for="reportDetailDayEnd">Sampai Tanggal:</label>
+        <select id="reportDetailDayEnd"></select>
+      </div>
+    </div>
+    <div id="reportDetailExtra"></div>
+    <div id="reportDetailWrap" class="table-wrap"></div>
+  </div>
+</section>
+
+<!-- ============ TAB: REPORT - DEPARTMENT ============ -->
+<section id="tab-reportdept" class="tab-content">
+  <div class="panel">
+    <div class="panel-header">
+      <h3>Department Report</h3>
+      <div class="header-actions">
+        <button class="btn btn-ghost" onclick="previewReport_('dept')">👁 Preview</button>
+        <button class="btn btn-ghost" onclick="printReport_('dept')">🖨 Print</button>
+        <button class="btn btn-excel" id="reportBtn_dept_excel" onclick="exportReport_('dept','excel')">⬇ Export Excel</button>
+        <button class="btn btn-pdf" id="reportBtn_dept_pdf" onclick="exportReport_('dept','pdf')">⬇ Export PDF</button>
+      </div>
+    </div>
+    <p class="muted">Dikelompokkan berdasarkan Department (dari Daftar Karyawan). Jika Department kosong, fallback ke Jabatan.</p>
+    <div class="filter-group" style="align-items:flex-start;">
+      <label>Department:</label>
+      <div id="reportDeptFilter" class="chk-group"></div>
+    </div>
+    <div id="reportDeptExtra"></div>
+    <div id="reportDeptWrap" class="table-wrap"></div>
+  </div>
+</section>
+
+<!-- ============ TAB: REPORT - EXCEPTION ============ -->
+<section id="tab-reportexception" class="tab-content">
+  <div class="panel">
+    <div class="panel-header">
+      <h3>Exception Report</h3>
+      <div class="header-actions">
+        <button class="btn btn-ghost" onclick="previewReport_('exception')">👁 Preview</button>
+        <button class="btn btn-ghost" onclick="printReport_('exception')">🖨 Print</button>
+        <button class="btn btn-excel" id="reportBtn_exception_excel" onclick="exportReport_('exception','excel')">⬇ Export Excel</button>
+        <button class="btn btn-pdf" id="reportBtn_exception_pdf" onclick="exportReport_('exception','pdf')">⬇ Export PDF</button>
+      </div>
+    </div>
+    <p class="muted">"Tidak Finger" = hari terjadwal kerja tapi Realisasi masih kosong. "Terlambat" perlu data jam scan (lihat catatan di 16_Reports.gs).</p>
+    <div class="log-filter-row">
+      <div class="filter-group" style="align-items:flex-start;">
+        <label>Jenis:</label>
+        <div id="reportExceptionJenisFilter" class="chk-group">
+          <label class="chk-item"><input type="checkbox" value="Alfa" checked> Alfa</label>
+          <label class="chk-item"><input type="checkbox" value="Izin" checked> Izin</label>
+          <label class="chk-item"><input type="checkbox" value="Sakit" checked> Sakit</label>
+          <label class="chk-item"><input type="checkbox" value="Terlambat" checked> Terlambat</label>
+          <label class="chk-item"><input type="checkbox" value="Tidak Finger" checked> Tidak Finger</label>
+        </div>
+      </div>
+      <div class="filter-group">
+        <label for="reportExceptionDayStart">Dari Tanggal:</label>
+        <select id="reportExceptionDayStart"></select>
+      </div>
+      <div class="filter-group">
+        <label for="reportExceptionDayEnd">Sampai Tanggal:</label>
+        <select id="reportExceptionDayEnd"></select>
+      </div>
+    </div>
+    <div id="reportExceptionWrap" class="table-wrap"></div>
+  </div>
+</section>
+<!-- ============ TAB: SETTING - ACCOUNT ============ -->
+<section id="tab-settingaccount" class="tab-content">
+  <div class="panel">
+    <div class="panel-header">
+      <h3>Setting &raquo; Account</h3>
+      <div class="header-actions">
+        <button class="btn btn-add" onclick="openAddUserPicker()">➕ Tambah User</button>
+      </div>
+    </div>
+    <p class="muted">Kelola akun login (khusus admin). Menonaktifkan user tidak menghapus histori, hanya memblokir login-nya.</p>
+    <div id="settingUsersWrap" class="table-wrap"></div>
+  </div>
+</section>
+
+<!-- ============ TAB: SETTING - HAK AKSES ============ -->
+<section id="tab-settinghakakses" class="tab-content">
+  <div class="panel">
+    <div class="panel-header">
+      <h3>Setting &raquo; Hak Akses (Role &amp; Permission)</h3>
+      <div class="header-actions">
+        <button class="btn btn-add" onclick="openAddRolePicker()">➕ Tambah Role</button>
+      </div>
+    </div>
+    <p class="muted">Centang menu yang boleh dilihat tiap role. Role "admin" selalu akses penuh dan tidak bisa diubah di sini.</p>
+    <div id="settingHakAksesWrap" class="table-wrap"></div>
+    <div class="picker-actions" style="justify-content:flex-start;margin-top:12px;">
+      <button class="btn btn-primary" id="saveHakAksesBtn" onclick="saveHakAksesMatrix()">💾 Simpan Perubahan</button>
+    </div>
+  </div>
+</section>
+
+<section id="tab-settingjamkerja" class="tab-content">
+  <div class="panel">
+    <h3>Setting &raquo; Setting Jam Kerja</h3>
+    <p class="muted" style="margin-bottom:16px;">Atur jam masuk & jam pulang standar untuk tiap kode shift. Nilai ini akan dipakai untuk mendeteksi keterlambatan / pulang cepat pada fase pengembangan berikutnya.</p>
+    <div id="settingJamKerjaWrap"></div>
+  </div>
+</section>
+
+<section id="tab-settingjadwalkerja" class="tab-content">
+  <div class="panel"><h3>Setting &raquo; Setting Jadwal Kerja</h3>
+    <p class="muted">🚧 Pengaturan pola shift dan jadwal kerja — segera hadir di tahap pengembangan berikutnya.</p>
+  </div>
+</section>
+<section id="tab-settingassignjadwal" class="tab-content">
+  <div class="panel">
+    <div class="panel-header">
+      <h3>Assign Karyawan ke Jadwal</h3>
+      <div class="header-actions">
+  <button class="btn btn-primary" id="assignSelectedBtn" onclick="submitAssignSelected_()">➕ Assign ke Jadwal Periode Aktif</button>
+  <button class="btn btn-danger" id="deleteUnassignedBtn" onclick="submitDeleteUnassignedSelected_()">🗑️ Hapus Terpilih</button>
+</div>
+    </div>
+    <p class="muted">Karyawan di bawah ini baru terdaftar di Daftar Karyawan dan BELUM masuk ke Jadwal/Realisasi/Rekap periode aktif ("<span id="assignJadwalPeriodLabel">-</span>"). Centang karyawan yang siap mulai bekerja, lalu klik tombol assign.</p>
+    <div id="assignJadwalWrap" class="table-wrap"></div>
+  </div>
+</section>
+
+<section id="tab-settinglibur" class="tab-content">
+  <div class="panel"><h3>Setting &raquo; Hari Libur</h3>
+    <p class="muted">🚧 Pengaturan hari libur nasional &amp; perusahaan — segera hadir di tahap pengembangan berikutnya.</p>
+  </div>
+</section>
+
+<section id="tab-settingfingerprint" class="tab-content">
+  <div class="panel"><h3>Setting &raquo; Integrasi Fingerprint</h3>
+    <p class="muted">🚧 Pengaturan koneksi &amp; konfigurasi mesin fingerprint — segera hadir di tahap pengembangan berikutnya.</p>
+  </div>
+</section>
+
+<section id="tab-settingauditlog" class="tab-content">
+  <div class="panel">
+    <div class="panel-header">
+      <h3>Setting &raquo; Audit Log</h3>
+      <div class="header-actions">
+        <input type="text" id="searchAuditLog" class="search-input" placeholder="🔍 Cari nama/username/target..." oninput="filterAuditLogTable_()">
+        <button class="btn btn-ghost" id="refreshAuditLogBtn" onclick="loadAuditLog_()">⟳ Refresh</button>
+      </div>
+    </div>
+    <p class="muted">Mencatat seluruh aktivitas perubahan data penting (Jadwal, Realisasi, Karyawan, Periode, Akun, Hak Akses, Pengajuan Izin, dll).</p>
+    <div class="log-filter-row">
+      <div class="filter-group">
+        <label for="auditLogModulFilter">Modul:</label>
+        <select id="auditLogModulFilter" onchange="loadAuditLog_()">
+          <option value="ALL">Semua Modul</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label for="auditLogTglMulai">Dari Tanggal:</label>
+        <input type="date" id="auditLogTglMulai" onchange="loadAuditLog_()">
+      </div>
+      <div class="filter-group">
+        <label for="auditLogTglAkhir">Sampai Tanggal:</label>
+        <input type="date" id="auditLogTglAkhir" onchange="loadAuditLog_()">
+      </div>
+    </div>
+    <p class="muted" id="auditLogCountInfo"></p>
+    <div id="auditLogWrap" class="table-wrap"></div>
+  </div>
+</section>
+ </main>
+    </div><!-- /.main-area -->
+  </div><!-- /.layout -->
+  </div><!-- /#appShell -->
+
+  <div id="statusToast" class="toast"></div>
+
+  <!-- Popup pilih status untuk 1 sel -->
+  <div id="statusPicker" class="picker hidden">
+    <div class="picker-box">
+      <div class="picker-title" id="pickerTitle"></div>
+      <div class="picker-options" id="pickerOptions"></div>
+      <button class="btn btn-ghost" id="pickerCancel">Batal</button>
+    </div>
+  </div>
+
+
+  <!-- Popup Tambah Karyawan -->
+  <div id="addEmployeePicker" class="picker hidden">
+    <div class="picker-box">
+      <div class="picker-title">➕ Tambah Karyawan Baru</div>
+      <div class="login-form">
+        <input type="text" id="newEmployeeNama" placeholder="Nama karyawan" autocomplete="off">
+        <input type="text" id="newEmployeeNik" placeholder="NIK (opsional, bisa diisi menyusul)" autocomplete="off">
+        <input type="text" id="newEmployeeDept" placeholder="Department (misal: PT Servanda Ventura Swareksa)" autocomplete="off">
+        <input type="text" id="newEmployeeJabatan" placeholder="Jabatan (misal: Cleaner, Team Leader)" autocomplete="off">
+        <div id="addEmployeeError" class="login-error"></div>
+      </div>
+      <div class="picker-actions">
+        <button class="btn btn-primary" id="addEmployeeSubmit">Tambah</button>
+        <button class="btn btn-ghost" id="addEmployeeCancel">Batal</button>
+      </div>
+    </div>
+  </div>
+  <!-- Popup Hapus Karyawan -->
+<div id="deleteEmployeePicker" class="picker hidden">
+  <div class="picker-box">
+    <div class="picker-title">🗑 Hapus Karyawan (Resign)</div>
+    <div class="login-form">
+      <label for="deleteEmployeeSelect" class="muted" style="display:block;margin-bottom:6px;">Pilih karyawan yang akan dihapus:</label>
+      <select id="deleteEmployeeSelect"></select>
+      <div id="deleteEmployeeWarning" class="login-error hidden" style="white-space: pre-wrap;"></div>
+      <div id="deleteEmployeeError" class="login-error"></div>
+    </div>
+    <div class="picker-actions">
+      <button class="btn btn-danger" id="deleteEmployeeSubmit">Hapus Karyawan</button>
+      <button class="btn btn-ghost" id="deleteEmployeeCancel">Batal</button>
+    </div>
+  </div>
+</div>
+  <!-- Popup Konfirmasi Hapus Arsip -->
+  <div id="deleteArchivePicker" class="picker hidden">
+    <div class="picker-box">
+      <div class="picker-title">🗑 Hapus Arsip Permanen</div>
+      <p class="muted" id="deleteArchiveWarning" style="margin-top:0;"></p>
+      <div class="login-form">
+        <input type="text" id="deleteArchiveConfirmInput" placeholder="Ketik ulang nama periode untuk konfirmasi" autocomplete="off">
+        <div id="deleteArchiveError" class="login-error"></div>
+      </div>
+      <div class="picker-actions">
+        <button class="btn btn-danger" id="deleteArchiveSubmit">Hapus Permanen</button>
+        <button class="btn btn-ghost" id="deleteArchiveCancel">Batal</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Popup Edit NIK -->
+  <div id="nikPicker" class="picker hidden">
+    <div class="picker-box">
+      <div class="picker-title" id="nikPickerTitle">Edit NIK</div>
+      <div class="login-form">
+        <input type="text" id="nikInput" placeholder="Nomor Induk Karyawan (NIK)" autocomplete="off">
+        <div id="nikError" class="login-error"></div>
+      </div>
+      <div class="picker-actions">
+        <button class="btn btn-primary" id="nikSubmit">Simpan</button>
+        <button class="btn btn-ghost" id="nikCancel">Batal</button>
+      </div>
+    </div>
+  </div>
+  <!-- Popup Edit Data Karyawan (Kepegawaian) -->
+  <div id="karyawanPicker" class="picker hidden">
+    <div class="picker-box">
+      <div class="picker-title" id="karyawanPickerTitle">Edit Data Karyawan</div>
+      <div class="login-form">
+        <label for="karyawanNikInput">NIK</label>
+        <input type="text" id="karyawanNikInput" placeholder="NIK" autocomplete="off">
+        <label for="karyawanDeptInput">Department</label>
+        <input type="text" id="karyawanDeptInput" placeholder="Department" autocomplete="off">
+        <label for="karyawanShiftInput">Shift</label>
+        <input type="text" id="karyawanShiftInput" placeholder="Misal: Pagi / Siang / Malam / Midle / Weekend" autocomplete="off">
+        <label for="karyawanStatusInput">Status Karyawan</label>
+        <select id="karyawanStatusInput">
+          <option value="Aktif">Aktif</option>
+          <option value="Non-Aktif">Non-Aktif</option>
+          <option value="Cuti Panjang">Cuti Panjang</option>
+          <option value="Resign">Resign</option>
+        </select>
+        <label for="karyawanTglInput">Tanggal Registrasi</label>
+        <input type="date" id="karyawanTglInput">
+        <div id="karyawanError" class="login-error"></div>
+      </div>
+      <div class="picker-actions">
+        <button class="btn btn-primary" id="karyawanSubmit">Simpan</button>
+        <button class="btn btn-ghost" id="karyawanCancel">Batal</button>
+      </div>
+    </div>
+  </div>
+  <!-- Popup Ganti Password -->
+<div id="changePasswordPicker" class="picker hidden">
+  <div class="picker-box">
+    <div class="picker-title">🔑 Ganti Password</div>
+    <div class="login-form">
+      <label for="oldPasswordInput">Password Lama</label>
+      <input type="password" id="oldPasswordInput" placeholder="Password lama" autocomplete="current-password">
+      <label for="newPasswordInput">Password Baru</label>
+      <input type="password" id="newPasswordInput" placeholder="Password baru (min. 6 karakter)" autocomplete="new-password">
+      <label for="newPasswordConfirmInput">Konfirmasi Password Baru</label>
+      <input type="password" id="newPasswordConfirmInput" placeholder="Ulangi password baru" autocomplete="new-password">
+      <div id="changePasswordError" class="login-error"></div>
+    </div>
+    <div class="picker-actions">
+      <button class="btn btn-primary" id="changePasswordSubmit">Simpan Password Baru</button>
+      <button class="btn btn-ghost" id="changePasswordCancel">Batal</button>
+    </div>
+  </div>
+</div>
+<!-- Tombol Chat AI Mengambang -->
+<button id="aiChatFab" class="ai-chat-fab" onclick="openAIChatPicker()">🤖</button>
+
+<!-- Popup Chat AI (floating, bisa digeser) -->
+<div id="aiChatPicker" class="picker hidden">
+  <div class="picker-box ai-chat-box" id="aiChatBoxEl">
+    <div class="picker-title" id="aiChatDragHandle">
+      <span>🤖 Asisten AMS</span>
+      <span class="drag-hint">✥ seret untuk memindahkan</span>
+    </div>
+    <div id="aiChatLog" class="ai-chat-log"></div>
+    <div id="aiChatConfirmArea" class="ai-chat-confirm hidden"></div>
+    <div class="ai-chat-input-row">
+      <input type="text" id="aiChatInput" placeholder="Tanya sesuatu, misal: siapa yang paling sering alfa?">
+      <button class="btn btn-add" id="aiChatSend">Kirim</button>
+    </div>
+    <button class="btn btn-ghost" id="aiChatClose" style="margin-top:8px;">Tutup</button>
+  </div>
+</div>
+<!-- Popup Tambah User -->
+<div id="addUserPicker" class="picker hidden">
+  <div class="picker-box">
+    <div class="picker-title">➕ Tambah User Baru</div>
+    <div class="login-form">
+      <input type="text" id="newUserNama" placeholder="Nama lengkap" autocomplete="off">
+      <input type="text" id="newUserUsername" placeholder="Username" autocomplete="off">
+      <input type="password" id="newUserPassword" placeholder="Password (min. 6 karakter)" autocomplete="new-password">
+      <select id="newUserRole"></select>
+      <div id="addUserError" class="login-error"></div>
+    </div>
+    <div class="picker-actions">
+      <button class="btn btn-primary" id="addUserSubmit">Tambah</button>
+      <button class="btn btn-ghost" id="addUserCancel">Batal</button>
+    </div>
+  </div>
+</div>
+
+<!-- Popup Reset Password User -->
+<div id="resetUserPasswordPicker" class="picker hidden">
+  <div class="picker-box">
+    <div class="picker-title" id="resetUserPasswordTitle">Reset Password User</div>
+    <div class="login-form">
+      <input type="password" id="resetUserPasswordInput" placeholder="Password baru (min. 6 karakter)" autocomplete="new-password">
+      <div id="resetUserPasswordError" class="login-error"></div>
+    </div>
+    <div class="picker-actions">
+      <button class="btn btn-primary" id="resetUserPasswordSubmit">Simpan</button>
+      <button class="btn btn-ghost" id="resetUserPasswordCancel">Batal</button>
+    </div>
+  </div>
+</div>
+
+<!-- Popup Tambah Role -->
+<div id="addRolePicker" class="picker hidden">
+  <div class="picker-box">
+    <div class="picker-title">➕ Tambah Role Baru</div>
+    <div class="login-form">
+      <input type="text" id="newRoleName" placeholder="Nama role (misal: Supervisor)" autocomplete="off">
+      <input type="text" id="newRoleDeskripsi" placeholder="Deskripsi (opsional)" autocomplete="off">
+      <div id="addRoleError" class="login-error"></div>
+    </div>
+    <div class="picker-actions">
+      <button class="btn btn-primary" id="addRoleSubmit">Tambah</button>
+      <button class="btn btn-ghost" id="addRoleCancel">Batal</button>
+    </div>
+  </div>
+</div>
+  <script src="app.js"></script>
+</body>
+</html>
