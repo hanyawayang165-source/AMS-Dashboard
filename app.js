@@ -418,7 +418,7 @@ function onDepartmentFilterChange() {
     document.getElementById('archiveBanner').classList.toggle('hidden', !viewingArchive);
     const deleteBtn = document.getElementById('deleteArchiveBtn');
     if (deleteBtn) {
-      const canDelete = viewingArchive && !!SESSION && SESSION.role === 'admin';
+      const canDelete = viewingArchive && !!SESSION && SESSION.role === 'Super Admin';
       deleteBtn.classList.toggle('hidden', !canDelete);
     }
     const deptSel = document.getElementById('departmentFilterSelector');
@@ -426,7 +426,7 @@ function onDepartmentFilterChange() {
     updateInputEditability();
   }
   function triggerArchivePeriod() {
-    if (!SESSION || SESSION.role !== 'admin') {
+    if (!SESSION || SESSION.role !== 'Super Admin') {
       toast('Hanya admin yang boleh mengarsipkan periode', true);
       return;
     }
@@ -457,7 +457,7 @@ function onDepartmentFilterChange() {
       .archiveCurrentPeriod(SESSION.token);
   }
   function triggerMulaiPeriodeBaru() {
-  if (!SESSION || SESSION.role !== 'admin') {
+  if (!SESSION || SESSION.role !== 'Super Admin') {
     toast('Hanya admin yang boleh memulai periode baru', true);
     return;
   }
@@ -499,7 +499,7 @@ function onDepartmentFilterChange() {
 
   function triggerDeleteArchive() {
     if (currentViewPeriodKey === 'active') return;
-    if (!SESSION || SESSION.role !== 'admin') {
+    if (!SESSION || SESSION.role !== 'Super Admin') {
       toast('Hanya admin yang boleh menghapus arsip', true);
       return;
     }
@@ -673,7 +673,7 @@ function onDepartmentFilterChange() {
   function updateInputEditability() {
     const isArchiveView = currentViewPeriodKey !== 'active';
     const canEdit = !!SESSION && !isArchiveView;
-    const canEditJadwal = !!SESSION && SESSION.role === 'admin' && !isArchiveView;
+    const canEditJadwal = !!SESSION && SESSION.role === 'Super Admin' && !isArchiveView;
 
     document.querySelectorAll('#tab-input .day-cell').forEach(cell => {
       cell.classList.toggle('editable', canEdit);
@@ -690,7 +690,7 @@ function onDepartmentFilterChange() {
       if (isArchiveView) {
         hint.textContent = 'Anda sedang melihat data arsip (read-only) — data tidak bisa diubah. Pilih "Periode Aktif" untuk kembali mengedit.';
       } else if (SESSION) {
-        hint.textContent = SESSION.role === 'admin'
+        hint.textContent = SESSION.role === 'Super Admin'
           ? 'Klik sel pada tabel untuk mengubah status kehadiran, atau upload file Excel sekaligus lewat tombol di atas.'
           : 'Klik sel pada tabel untuk mengubah status kehadiran karyawan di tanggal tersebut.';
       } else {
@@ -718,7 +718,7 @@ function onDepartmentFilterChange() {
     if (addEmployeeBtn) addEmployeeBtn.classList.toggle('hidden', !canEditJadwal);
     const deleteEmployeeBtn = document.getElementById('deleteEmployeeBtn');
     if (deleteEmployeeBtn) deleteEmployeeBtn.classList.toggle('hidden', !canEditJadwal);
-    const canArchive = !!SESSION && SESSION.role === 'admin' && !isArchiveView;
+    const canArchive = !!SESSION && SESSION.role === 'Super Admin' && !isArchiveView;
 
     const archiveBtn = document.getElementById('archiveBtn');
     if (archiveBtn) {
@@ -744,7 +744,7 @@ function onDepartmentFilterChange() {
     renderCards();
     renderLegend('legendJadwal', STATE.shiftCodes);
     renderLegend('legendRealisasi', STATE.statusCodes);
-    const jadwalEditable = !!SESSION && SESSION.role === 'admin' && currentViewPeriodKey === 'active';
+    const jadwalEditable = !!SESSION && SESSION.role === 'Super Admin' && currentViewPeriodKey === 'active';
     renderGrid('jadwalWrap', STATE.jadwal, STATE.dayCount, STATE.dayNames, STATE.shiftCodes, jadwalEditable, 'jadwal');
     renderGrid('realisasiWrap', STATE.realisasi, STATE.dayCount, STATE.dayNames, STATE.statusCodes, true, 'realisasi');
     renderRekapTable('rekapWrap', STATE.rekap, true);
@@ -1226,7 +1226,7 @@ function onDepartmentFilterChange() {
   function renderRekapTable(wrapId, rows, full) {
     const cols = ['No', 'Nama', 'NIK', 'Jabatan', 'Jadwal', 'Hadir', 'Alfa', 'Izin', 'Sakit', 'Cuti', 'OFF', '% Hadir', 'Rank', 'Jam Kerja', 'Target Jam', 'Kekurangan Jam'];
     let html = '<table><thead><tr>' + cols.map(c => `<th>${c}</th>`).join('') + '</tr></thead><tbody>';
-    const canEditNik = !!SESSION && SESSION.role === 'admin' && currentViewPeriodKey === 'active';
+    const canEditNik = !!SESSION && SESSION.role === 'Super Admin' && currentViewPeriodKey === 'active';
     rows.forEach(r => {
       const pct = (typeof r.persenKehadiran === 'number') ? (r.persenKehadiran * 100).toFixed(1) + '%' : r.persenKehadiran;
       const nik = r.nik || '';
@@ -1279,7 +1279,7 @@ function onDepartmentFilterChange() {
       showLoginGate();
       return;
     }
-    if (type === 'jadwal' && SESSION.role !== 'admin') {
+    if (type === 'jadwal' && SESSION.role !== 'Super Admin') {
       toast('Hanya admin yang boleh mengubah Jadwal', true);
       return;
     }
@@ -1356,7 +1356,7 @@ function onDepartmentFilterChange() {
       toast('Sedang melihat data arsip, tidak bisa tambah karyawan. Pilih "Periode Aktif" dulu.', true);
       return;
     }
-    if (!SESSION || SESSION.role !== 'admin') {
+    if (!SESSION || SESSION.role !== 'Super Admin') {
       toast('Hanya admin yang boleh menambah karyawan', true);
       return;
     }
@@ -1409,7 +1409,7 @@ function openDeleteEmployeePicker() {
     toast('Sedang melihat data arsip, tidak bisa hapus karyawan. Pilih "Periode Aktif" dulu.', true);
     return;
   }
-  if (!SESSION || SESSION.role !== 'admin') {
+  if (!SESSION || SESSION.role !== 'Super Admin') {
     toast('Hanya admin yang boleh menghapus karyawan', true);
     return;
   }
@@ -1487,7 +1487,7 @@ function submitDeleteEmployee() {
       toast('Sedang melihat data arsip, NIK tidak bisa diubah dari sini.', true);
       return;
     }
-    if (!SESSION || SESSION.role !== 'admin') {
+    if (!SESSION || SESSION.role !== 'Super Admin') {
       toast('Hanya admin yang boleh mengubah NIK', true);
       return;
     }
@@ -1547,7 +1547,7 @@ function submitDeleteEmployee() {
   }
 
   function renderDaftarKaryawanTable() {
-    const canEdit = !!SESSION && SESSION.role === 'admin';
+    const canEdit = !!SESSION && SESSION.role === 'Super Admin';
     const cols = ['NIK', 'Nama', 'Department', 'Jabatan', 'Shift', 'Status Karyawan', 'Tanggal Registrasi', 'Status Jadwal'];
     let html = '<table><thead><tr>' + cols.map(c => `<th>${c}</th>`).join('') + (canEdit ? '<th>Aksi</th>' : '') + '</tr></thead><tbody>';
 
@@ -1580,7 +1580,7 @@ function submitDeleteEmployee() {
   }
 
   function openEditKaryawanPicker(nama) {
-    if (!SESSION || SESSION.role !== 'admin') {
+    if (!SESSION || SESSION.role !== 'Super Admin') {
       toast('Hanya admin yang boleh mengubah data kepegawaian', true);
       return;
     }
@@ -1786,7 +1786,7 @@ function submitDeleteEmployee() {
       toast('Sedang melihat data arsip, tidak bisa upload realisasi. Pilih "Periode Aktif" dulu.', true);
       return;
     }
-    if (!SESSION || SESSION.role !== 'admin') {
+    if (!SESSION || SESSION.role !== 'Super Admin') {
       toast('Hanya admin yang boleh upload realisasi', true);
       return;
     }
@@ -1852,7 +1852,7 @@ function submitDeleteEmployee() {
       toast('Sedang melihat data arsip, tidak bisa upload absen finger. Pilih "Periode Aktif" dulu.', true);
       return;
     }
-    if (!SESSION || SESSION.role !== 'admin') {
+    if (!SESSION || SESSION.role !== 'Super Admin') {
       toast('Hanya admin yang boleh upload absen finger', true);
       return;
     }
@@ -2419,7 +2419,7 @@ function sendAIChatMessage() {
   }
 
   function renderUsersTable() {
-    const canEdit = !!SESSION && SESSION.role === 'admin';
+    const canEdit = !!SESSION && SESSION.role === 'Super Admin';
     const cols = ['Username', 'Nama', 'Role', 'Status'];
     let html = '<table><thead><tr>' + cols.map(c => `<th>${c}</th>`).join('') + (canEdit ? '<th>Aksi</th>' : '') + '</tr></thead><tbody>';
     USERS_LIST_DATA.forEach(u => {
@@ -2440,7 +2440,7 @@ function sendAIChatMessage() {
   }
 
   function openAddUserPicker() {
-    if (!SESSION || SESSION.role !== 'admin') { toast('Hanya admin yang boleh menambah user', true); return; }
+    if (!SESSION || SESSION.role !== 'Super Admin') { toast('Hanya admin yang boleh menambah user', true); return; }
     document.getElementById('newUserNama').value = '';
     document.getElementById('newUserUsername').value = '';
     document.getElementById('newUserPassword').value = '';
@@ -2449,7 +2449,7 @@ function sendAIChatMessage() {
     google.script.run
       .withSuccessHandler(roles => {
         const base = [{ roleName: 'admin' }, { roleName: 'input' }];
-        const extra = (roles || []).filter(r => r.roleName !== 'admin' && r.roleName !== 'input');
+        const extra = (roles || []).filter(r => r.roleName !== 'Super Admin' && r.roleName !== 'input');
         sel.innerHTML = base.concat(extra).map(r => `<option value="${escapeHtml(r.roleName)}">${escapeHtml(r.roleName)}</option>`).join('');
       })
       .withFailureHandler(() => { sel.innerHTML = '<option value="input">input</option><option value="admin">admin</option>'; })
@@ -2546,7 +2546,7 @@ function loadJamKerjaSettings() {
 }
 
 function renderJamKerjaSettingsForm() {
-  const canEdit = !!SESSION && SESSION.role === 'admin';
+  const canEdit = !!SESSION && SESSION.role === 'Super Admin';
   let html = '<table><thead><tr><th>Kode Shift</th><th>Label</th><th>Jam Masuk Standar</th><th>Jam Pulang Standar</th></tr></thead><tbody>';
   JAMKERJA_SETTINGS_DATA.forEach(s => {
     html += `<tr data-kode="${escapeHtml(s.kodeShift)}">
@@ -2565,7 +2565,7 @@ function renderJamKerjaSettingsForm() {
 }
 
 function saveJamKerjaSettings() {
-  if (!SESSION || SESSION.role !== 'admin') return;
+  if (!SESSION || SESSION.role !== 'Super Admin') return;
   const wrap = document.getElementById('settingJamKerjaWrap');
   const rows = wrap.querySelectorAll('tbody tr');
   const settings = Array.from(rows).map(tr => ({
@@ -2644,7 +2644,7 @@ function saveJamKerjaSettings() {
   }
 
   function submitAssignSelected_() {
-    if (!SESSION || SESSION.role !== 'admin') { toast('Hanya admin yang boleh melakukan assign', true); return; }
+    if (!SESSION || SESSION.role !== 'Super Admin') { toast('Hanya admin yang boleh melakukan assign', true); return; }
     const selected = Array.from(document.querySelectorAll('.assign-jadwal-chk:checked')).map(el => el.value);
     if (!selected.length) { toast('Pilih minimal 1 karyawan terlebih dahulu', true); return; }
     if (!confirm('Assign ' + selected.length + ' karyawan ke Jadwal periode aktif ("' + (STATE && STATE.period ? STATE.period : '-') + '")?')) return;
@@ -2676,7 +2676,7 @@ function saveJamKerjaSettings() {
       .assignEmployeeToJadwal(selected, SESSION.token);
   }
   function submitDeleteUnassignedSelected_() {
-  if (!SESSION || SESSION.role !== 'admin') { toast('Hanya admin yang boleh melakukan hapus', true); return; }
+  if (!SESSION || SESSION.role !== 'Super Admin') { toast('Hanya admin yang boleh melakukan hapus', true); return; }
   const selected = Array.from(document.querySelectorAll('.assign-jadwal-chk:checked')).map(el => el.value);
   if (!selected.length) { toast('Pilih minimal 1 karyawan terlebih dahulu', true); return; }
   if (!confirm('Hapus permanen ' + selected.length + ' karyawan dari Daftar Karyawan? Tindakan ini tidak bisa dibatalkan.')) return;
@@ -2730,7 +2730,7 @@ function saveJamKerjaSettings() {
 
   function renderHakAksesMatrix() {
     if (!HAKAKSES_DATA) return;
-    const roles = HAKAKSES_DATA.roles.filter(r => r.roleName !== 'admin');
+    const roles = HAKAKSES_DATA.roles.filter(r => r.roleName !== 'Super Admin');
     const menus = HAKAKSES_DATA.menus;
     const permMap = {};
     HAKAKSES_DATA.permissions.forEach(p => { permMap[p.roleName + '|' + p.menuKey] = p.canView; });
@@ -2757,7 +2757,7 @@ function saveJamKerjaSettings() {
     if (!SESSION || !HAKAKSES_DATA) return;
     const table = document.querySelector('#settingHakAksesWrap table');
     if (!table) { toast('Tidak ada role untuk disimpan.', true); return; }
-    const roles = HAKAKSES_DATA.roles.filter(r => r.roleName !== 'admin');
+    const roles = HAKAKSES_DATA.roles.filter(r => r.roleName !== 'Super Admin');
     const btn = document.getElementById('saveHakAksesBtn');
     btn.disabled = true;
     btn.textContent = '⏳ Menyimpan...';
@@ -2788,7 +2788,7 @@ function saveJamKerjaSettings() {
   }
 
   function openAddRolePicker() {
-    if (!SESSION || SESSION.role !== 'admin') { toast('Hanya admin yang boleh menambah role', true); return; }
+    if (!SESSION || SESSION.role !== 'Super Admin') { toast('Hanya admin yang boleh menambah role', true); return; }
     document.getElementById('newRoleName').value = '';
     document.getElementById('newRoleDeskripsi').value = '';
     document.getElementById('addRoleError').textContent = '';
@@ -2829,7 +2829,7 @@ function startPengajuanBadgePolling_() {
 }
 
 function loadPengajuanBadgeCount_() {
-  if (!SESSION || SESSION.role !== 'admin') return;
+  if (!SESSION || SESSION.role !== 'Super Admin') return;
   google.script.run
     .withSuccessHandler(res => {
       const badge = document.getElementById('pengajuanBadge');
@@ -2864,7 +2864,7 @@ function ensurePengajuanWrapListener_() {
  * tombol "Coba Lagi" — TIDAK PERNAH dibiarkan macet di "Memuat...".
  */
 function loadPengajuanList_() {
-  if (!SESSION || SESSION.role !== 'admin') return;
+  if (!SESSION || SESSION.role !== 'Super Admin') return;
   ensurePengajuanWrapListener_();
   const wrap = document.getElementById('pengajuanWrap');
   if (wrap) wrap.innerHTML = '<p class="muted">⏳ Memuat daftar pengajuan...</p>';
