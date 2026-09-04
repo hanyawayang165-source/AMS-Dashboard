@@ -2952,8 +2952,8 @@ function renderPengajuanTable_() {
       html += `<tr>
         <td class="name-col">${escapeHtml(p.nama)}</td>
         <td>${escapeHtml(p.jenis)}</td>
-        <td>${escapeHtml(p.tglMulai)}</td>
-        <td>${escapeHtml(p.tglAkhir)}</td>
+        <td>${formatTglIndo_(p.tglMulai)}</td>
+        <td>${formatTglIndo_(p.tglAkhir)}</td>
         <td>${pengajuanStatusBadge_(p.status)}</td>
         <td>${escapeHtml(p.alasan)}</td>
         <td>${p.lampiranUrl ? `<a href="${escapeHtml(p.lampiranUrl)}" target="_blank" rel="noopener">Lihat</a>` : '-'}</td>
