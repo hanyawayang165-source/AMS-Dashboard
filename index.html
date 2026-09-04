@@ -16,7 +16,17 @@
   .nav-group.open .nav-submenu{display:flex;}
   .tab-btn.sub{padding-left:38px;font-size:13px;opacity:.92;}
 </style>
+  <link rel="manifest" href="/manifest.json"> <meta name="theme-color" content="#1e3a5f"> <link rel="apple-touch-icon" href="/icon-192.png"> Lalu cari tag </body>,
 </head>
+  <script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/sw.js')
+        .then(() => console.log('Service worker aktif'))
+        .catch((err) => console.error('SW gagal:', err));
+    });
+  }
+</script>
 <body>
 
   <div id="loginGate" class="login-gate">
